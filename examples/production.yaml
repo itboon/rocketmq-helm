@@ -1,0 +1,79 @@
+# 集群名
+clusterName: "cluster-production"
+
+broker:
+  # 3个 master 节点，每个 master 具有1个副节点，共6个 broker 节点
+  size:
+    master: 3
+    replica: 1
+
+  # 修改 broker 容器镜像地址和版本
+  #image:
+  #  repository: "apacherocketmq/rocketmq-broker"
+  #  tag: "4.5.0-alpine-operator-0.3.0"
+
+  persistence:
+    enabled: true
+    size: 8Gi
+    #storageClass: gp2
+
+  # 主节点资源分配
+  master:
+    brokerRole: ASYNC_MASTER
+    jvmMemory: " -Xms4g -Xmx4g -Xmn1g "
+    resources:
+      limits:
+        cpu: 4
+        memory: 12Gi
+      requests:
+        cpu: 200m
+        memory: 6Gi
+  
+  # 副节点资源分配
+  replica:
+    jvmMemory: " -Xms1g -Xmx1g -Xmn256m "
+    resources:
+      limits:
+        cpu: 4
+        memory: 8Gi
+      requests:
+        cpu: 50m
+        memory: 2Gi
+
+nameserver:
+  replicaCount: 3
+
+  # 修改 nameserver 容器镜像地址和版本
+  #image:
+  #  repository: "apacherocketmq/rocketmq-nameserver"
+  #  tag: "4.5.0-alpine-operator-0.3.0"
+
+  resources:
+    limits:
+      cpu: 4
+      memory: 8Gi
+    requests:
+      cpu: 50m
+      memory: 1Gi
+  
+  persistence:
+    enabled: true
+    size: 8Gi
+    #storageClass: gp2
+
+dashboard:
+  enabled: true
+  replicaCount: 1
+
+  ingress:
+    enabled: true
+    className: "nginx"
+    hosts:
+      - host: rocketmq.example.com
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+    #tls:
+    #  - secretName: example-com-tls
+    #    hosts:
+    #      - rocketmq.example.com

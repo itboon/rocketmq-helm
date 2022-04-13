@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: broker-config
+data:
+  broker-common.conf: |
+  {{- range $key, $value := .Values.broker.config }}
+    {{ $key }}: {{ $value }}
+  {{- end -}}

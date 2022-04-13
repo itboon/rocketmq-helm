@@ -1,0 +1,15 @@
+{{- if .Values.dashboard.enabled -}}
+{{- $fullName := include "rocketmq.dashboard.fullname" . -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $fullName| quote }}
+spec:
+  ports:
+  - port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    {{- include "rocketmq.selectorLabels" . | nindent 4 }}
+    component: dashboard
+{{- end }}

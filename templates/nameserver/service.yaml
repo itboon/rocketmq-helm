@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rocketmq.nameserver.fullname" . }}
+spec:
+  ports:
+  - port: 9876
+    protocol: TCP
+    targetPort: 9876
+  selector:
+    {{- include "rocketmq.selectorLabels" . | nindent 4 }}
+    component: nameserver

@@ -1,0 +1,99 @@
+clusterName: "rocketmq-cluster-a"
+
+broker:
+  size:
+    master: 1
+    replica: 0
+  image:
+    repository: "apacherocketmq/rocketmq-broker"
+    pullPolicy: IfNotPresent
+    tag: "4.5.0-alpine-operator-0.3.0"
+  
+  master:
+    brokerRole: ASYNC_MASTER
+    jvmMemory: " -Xms1g -Xmx1g -Xmn256m "
+    resources:
+      limits:
+        cpu: 4
+        memory: 8Gi
+      requests:
+        cpu: 200m
+        memory: 2Gi
+  
+  replica:
+    jvmMemory: " -Xms1g -Xmx1g -Xmn256m "
+    resources:
+      limits:
+        cpu: 4
+        memory: 8Gi
+      requests:
+        cpu: 50m
+        memory: 2Gi
+
+  persistence:
+    enabled: true
+    size: 8Gi
+    #storageClass: "gp2"
+  
+  config:
+    deleteWhen: "04"
+    fileReservedTime: "48"
+    flushDiskType: "ASYNC_FLUSH"
+    waitTimeMillsInSendQueue: "1000"
+    transientStorePoolEnable: "true"
+    transferMsgByHeap: "false"
+
+nameserver:
+  replicaCount: 1
+  image:
+    repository: "apacherocketmq/rocketmq-nameserver"
+    pullPolicy: IfNotPresent
+    tag: "4.5.0-alpine-operator-0.3.0"
+
+  resources:
+    limits:
+      cpu: 4
+      memory: 12Gi
+    requests:
+      cpu: 500m
+      memory: 2Gi
+  
+  persistence:
+    enabled: true
+    size: 8Gi
+    #storageClass: "gp2"
+
+dashboard:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: "apacherocketmq/rocketmq-dashboard"
+    pullPolicy: IfNotPresent
+    tag: "1.0.0"
+
+  jvm:
+    maxHeapSize: 256M
+
+  resources:
+    limits:
+      cpu: 1
+      memory: 2Gi
+    requests:
+      cpu: 20m
+      memory: 512Mi
+
+  ingress:
+    enabled: false
+    className: ""
+    annotations: {}
+      # kubernetes.io/ingress.class: nginx
+      # kubernetes.io/tls-acme: "true"
+    hosts:
+      - host: chart-example.local
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+    tls: []
+    #  - secretName: chart-example-tls
+    #    hosts:
+    #      - chart-example.local

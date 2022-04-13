@@ -1,0 +1,63 @@
+{{- $fullName := include "rocketmq.nameserver.fullname" . -}}
+{{- $image := printf "%s:%s" .Values.nameserver.image.repository .Values.nameserver.image.tag }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ $fullName | quote }}
+  labels:
+    {{- include "rocketmq.labels" $ | nindent 4 }}
+spec:
+  podManagementPolicy: OrderedReady
+  replicas: {{ .Values.nameserver.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "rocketmq.selectorLabels" $ | nindent 6 }}
+      component: nameserver
+  serviceName: {{ $fullName | quote }}
+  template:
+    metadata:
+      labels:
+        {{- include "rocketmq.selectorLabels" $ | nindent 8 }}
+        component: nameserver
+    spec:
+      containers:
+      - name: nameserver
+        image: {{ $image | quote }}
+        #command:
+        #  - sh
+        #  - mqnamesrv
+        {{- if .Values.nameserver.image.pullPolicy }}
+        imagePullPolicy: {{ .Values.nameserver.image.pullPolicy | quote }}
+        {{- end }}
+        ports:
+        - containerPort: 9876
+          name: main
+          protocol: TCP
+        resources:
+          {{- toYaml .Values.nameserver.resources | nindent 10 }}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /root/logs
+          name: nameserver-storage
+          subPath: logs
+      dnsPolicy: ClusterFirst
+      terminationGracePeriodSeconds: 10
+  {{- if not $.Values.nameserver.persistence.enabled }}
+      volumes:
+      - name: nameserver-storage
+        emptyDir: {}
+  {{- else }}
+  volumeClaimTemplates:
+    - metadata:
+        name: nameserver-storage
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        {{- with $.Values.nameserver.persistence.storageClass }}
+        storageClassName: {{ if (eq "-" .) }}""{{ else }}{{ . }}{{ end }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ $.Values.broker.persistence.size | quote }}
+  {{- end }}

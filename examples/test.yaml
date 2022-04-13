@@ -1,0 +1,41 @@
+clusterName: "cluster-test"
+
+broker:
+  size:
+    master: 1
+    replica: 0
+
+  persistence:
+    enabled: true
+    size: 8Gi
+
+nameserver:
+  replicaCount: 1
+  resources:
+    limits:
+      cpu: 4
+      memory: 12Gi
+    requests:
+      cpu: 500m
+      memory: 2Gi
+  
+  persistence:
+    enabled: true
+    size: 8Gi
+
+dashboard:
+  enabled: true
+  replicaCount: 1
+
+  ingress:
+    enabled: true
+    className: "nginx"
+    hosts:
+      - host: rocketmq.example.com
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+    tls:
+      - secretName: example-com-tls
+        hosts:
+          - rocketmq.example.com

@@ -1,0 +1,140 @@
+{{- $fullName := include "rocketmq.fullname" . -}}
+{{- $nameserverFullName := include "rocketmq.nameserver.fullname" . -}}
+{{- $masterSize := int .Values.broker.size.master }}
+{{- $replicaCount := int (add1 .Values.broker.size.replica) }}
+{{- $nameserverReplicaCount:= int .Values.nameserver.replicaCount }}
+{{- $image := printf "%s:%s" .Values.broker.image.repository .Values.broker.image.tag }}
+{{- range $brokerIndex := until $masterSize }}
+{{- range $brokerID := until $replicaCount }}
+  {{- $brokerName := printf "broker-%d" $brokerIndex }}
+  {{- $brokerFullName := printf "%s-master" $brokerName }}
+  {{- $brokerMemory := $.Values.broker.master.jvmMemory }}
+  {{- $brokerRole := $.Values.broker.master.brokerRole }}
+  {{- $brokerConfigKey := "broker-master.conf" }}
+  {{- if gt $brokerID 0 }}
+    {{- /* master $brokerID = 0, slave $brokerID > 0 */}}
+    {{- $brokerFullName = printf "%s-replica-%d" $brokerName $brokerID }}
+    {{- $brokerMemory = $.Values.broker.replica.jvmMemory }}
+    {{- $brokerRole = "SLAVE" }}
+    {{- $brokerConfigKey = "broker-slave.conf" }}
+  {{- end }}
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ printf "%s-%s" $fullName $brokerFullName }}
+  labels:
+    {{- include "rocketmq.labels" $ | nindent 4 }}
+spec:
+  podManagementPolicy: OrderedReady
+  replicas: 1
+  updateStrategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      {{- include "rocketmq.selectorLabels" $ | nindent 6 }}
+      component: broker
+      broker: {{ $brokerFullName }}
+  serviceName: ""
+  template:
+    metadata:
+      labels:
+        {{- include "rocketmq.selectorLabels" $ | nindent 8 }}
+        component: broker
+        broker: {{ $brokerFullName }}
+    spec:
+      containers:
+      - name: broker
+        image: {{ $image | quote }}
+        {{- if $.Values.nameserver.image.pullPolicy }}
+        imagePullPolicy: {{ $.Values.nameserver.image.pullPolicy | quote }}
+        {{- end }}
+        #command:
+        #  - sh
+        #  - mqbroker
+        env:
+        - name: NAMESRV_ADDR
+          #value: rocketmq-nameserver:9876
+          value: {{ range $i := until $nameserverReplicaCount }}{{ if gt $i 0 }}{{ printf ";" }}{{ end }}{{ printf "%s-%d.%s:9876" $nameserverFullName $i $nameserverFullName }}{{ end }}
+        - name: BROKER_ID
+          value: {{ $brokerID | quote }}
+        - name: BROKER_CLUSTER_NAME
+          value: {{ $.Values.clusterName | quote }}
+        - name: BROKER_NAME
+          value: {{ $brokerName | quote }}
+        - name: BROKER_ROLE
+          value: {{ $brokerRole | quote }}
+        - name: BROKER_MEM
+          value: {{ $brokerMemory | quote }}
+        {{- with $.Values.broker.commonEnvs }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with $.Values.broker.extraEnvs }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+        lifecycle:
+          postStart:
+            exec:
+              command:
+              - /bin/bash
+              - -c
+              - echo Initial broker
+              #- "export BROKER_NAME=broker-${HOSTNAME: -1} ; echo Broker Name: $BROKER_NAME"
+        ports:
+        - containerPort: 10909
+          name: vip
+          protocol: TCP
+        - containerPort: 10911
+          name: main
+          protocol: TCP
+        - containerPort: 10912
+          name: ha
+          protocol: TCP
+        resources:
+        {{- if eq $brokerID 0 }}
+          {{- toYaml $.Values.broker.master.resources | nindent 10 }}
+        {{- else }}
+          {{- toYaml $.Values.broker.replica.resources | nindent 10 }}
+        {{- end }}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /root/logs
+          name: broker-storage
+          subPath: logs/rocketmq-broker
+        - mountPath: /root/store
+          name: broker-storage
+          subPath: store/rocketmq-broker
+        - mountPath: /root/rocketmq/broker/conf/broker-common.conf
+          name: broker-config
+          subPath: broker-common.conf
+      dnsPolicy: ClusterFirst
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - configMap:
+          defaultMode: 420
+          items:
+          - key: {{ $brokerConfigKey | quote }}
+            #key: broker-common.conf
+            path: broker-common.conf
+          name: broker-config
+        name: broker-config
+  {{- if not $.Values.broker.persistence.enabled }}
+      - name: broker-storage
+        emptyDir: {}
+  {{- else }}
+  volumeClaimTemplates:
+    - metadata:
+        name: broker-storage
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        {{- with $.Values.broker.persistence.storageClass }}
+        storageClassName: {{ if (eq "-" .) }}""{{ else }}{{ . }}{{ end }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ $.Values.broker.persistence.size | quote }}
+  {{- end }}
+{{- end }}
+{{- end }}
