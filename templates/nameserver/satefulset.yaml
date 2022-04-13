@@ -23,9 +23,6 @@ spec:
       containers:
       - name: nameserver
         image: {{ $image | quote }}
-        #command:
-        #  - sh
-        #  - mqnamesrv
         {{- if .Values.nameserver.image.pullPolicy }}
         imagePullPolicy: {{ .Values.nameserver.image.pullPolicy | quote }}
         {{- end }}

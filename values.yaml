@@ -36,6 +36,7 @@ broker:
     #storageClass: "gp2"
   
   config:
+    brokerRole: ASYNC_MASTER
     deleteWhen: "04"
     fileReservedTime: "48"
     flushDiskType: "ASYNC_FLUSH"

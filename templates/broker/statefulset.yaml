@@ -49,9 +49,6 @@ spec:
         {{- if $.Values.nameserver.image.pullPolicy }}
         imagePullPolicy: {{ $.Values.nameserver.image.pullPolicy | quote }}
         {{- end }}
-        #command:
-        #  - sh
-        #  - mqbroker
         env:
         - name: NAMESRV_ADDR
           #value: rocketmq-nameserver:9876
@@ -114,8 +111,7 @@ spec:
       - configMap:
           defaultMode: 420
           items:
-          - key: {{ $brokerConfigKey | quote }}
-            #key: broker-common.conf
+          - key: broker-common.conf
             path: broker-common.conf
           name: broker-config
         name: broker-config

@@ -7,9 +7,9 @@
 # cd rocketmq-helm
 
 kubectl create namespace rocketmq
-# 部署测试集群
+# 部署测试集群, 单 Master
 helm -n rocketmq install rocketmq -f examples/test.yml ./
-# 部署生产集群
+# 部署生产集群, 多 Master 多 Slave
 helm -n rocketmq install rocketmq -f examples/production.yaml ./
 ```
 
@@ -38,7 +38,7 @@ broker:
     replica: 0
 ```
 
-### 多 Master 多 Slave 模式-异步复制
+### 多 Master 多 Slave 模式
 
 每个Master配置一个Slave，有多对Master-Slave，HA采用异步复制方式，主备有短暂消息延迟（毫秒级），这种模式的优缺点如下：
 
