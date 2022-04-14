@@ -20,6 +20,29 @@ spec:
         {{- include "rocketmq.selectorLabels" $ | nindent 8 }}
         component: nameserver
     spec:
+      {{- with $.Values.nameserver.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if not $.Values.nameserver.affinityOverride }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 5
+            podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  {{- include "rocketmq.selectorLabels" $ | nindent 18 }}
+                  component: nameserver
+              topologyKey: kubernetes.io/hostname
+      {{- else if $.Values.nameserver.affinityOverride }}
+      affinity:
+        {{- toYaml $.Values.nameserver.affinityOverride | nindent 8 }}
+      {{- end }}
+      {{- with $.Values.nameserver.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
       - name: nameserver
         image: {{ $image | quote }}
@@ -56,5 +79,5 @@ spec:
         {{- end }}
         resources:
           requests:
-            storage: {{ $.Values.broker.persistence.size | quote }}
+            storage: {{ $.Values.nameserver.persistence.size | quote }}
   {{- end }}

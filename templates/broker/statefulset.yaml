@@ -43,6 +43,29 @@ spec:
         component: broker
         broker: {{ $brokerFullName }}
     spec:
+      {{- with $.Values.broker.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if not $.Values.broker.affinityOverride }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 5
+            podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  {{- include "rocketmq.selectorLabels" $ | nindent 18 }}
+                  component: broker
+              topologyKey: kubernetes.io/hostname
+      {{- else if $.Values.broker.affinityOverride }}
+      affinity:
+        {{- toYaml $.Values.broker.affinityOverride | nindent 8 }}
+      {{- end }}
+      {{- with $.Values.broker.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
       - name: broker
         image: {{ $image | quote }}

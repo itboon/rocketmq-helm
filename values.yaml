@@ -44,6 +44,9 @@ broker:
     transientStorePoolEnable: "true"
     transferMsgByHeap: "false"
 
+  affinityOverride: {}
+  tolerations: {}
+
 nameserver:
   replicaCount: 1
   image:
@@ -63,6 +66,9 @@ nameserver:
     enabled: true
     size: 8Gi
     #storageClass: "gp2"
+
+  affinityOverride: {}
+  tolerations: {}
 
 dashboard:
   enabled: true
