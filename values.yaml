@@ -46,6 +46,7 @@ broker:
 
   affinityOverride: {}
   tolerations: {}
+  nodeSelector: {}
 
 nameserver:
   replicaCount: 1
@@ -56,10 +57,10 @@ nameserver:
 
   resources:
     limits:
-      cpu: 4
-      memory: 12Gi
+      cpu: 2
+      memory: 6Gi
     requests:
-      cpu: 500m
+      cpu: 100m
       memory: 2Gi
   
   persistence:
@@ -69,6 +70,7 @@ nameserver:
 
   affinityOverride: {}
   tolerations: {}
+  nodeSelector: {}
 
 dashboard:
   enabled: true
