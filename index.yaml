@@ -2,6 +2,23 @@ apiVersion: v1
 entries:
   rocketmq:
   - apiVersion: v2
+    appVersion: 5.3.2
+    created: "2025-03-24T15:14:04.165468352Z"
+    description: RocketMQ Helm chart
+    digest: 6f2dcf8f74163b523b29f94843d04ff69d7f6fccfbe7ab2817b445482be9c910
+    keywords:
+    - rocketmq
+    - kubernetes
+    - apache
+    maintainers:
+    - name: itboon
+      url: https://github.com/itboon/rocketmq-helm
+    name: rocketmq
+    type: application
+    urls:
+    - https://github.com/itboon/rocketmq-helm/releases/download/rocketmq-12.3.3/rocketmq-12.3.3.tgz
+    version: 12.3.3
+  - apiVersion: v2
     appVersion: 5.3.0
     created: "2024-09-16T08:00:40.055320784Z"
     description: RocketMQ Helm chart
@@ -479,6 +496,23 @@ entries:
     version: 2.1.0
   rocketmq-cluster:
   - apiVersion: v2
+    appVersion: 5.3.2
+    created: "2025-03-24T15:14:04.356628094Z"
+    description: RocketMQ Helm chart
+    digest: 41f5812f52946ba67b6a9f82a0377632088c5a2abce703aad0ed6fed1eae13dc
+    keywords:
+    - rocketmq
+    - kubernetes
+    - apache
+    maintainers:
+    - name: itboon
+      url: https://github.com/itboon/rocketmq-helm
+    name: rocketmq-cluster
+    type: application
+    urls:
+    - https://github.com/itboon/rocketmq-helm/releases/download/rocketmq-cluster-12.3.3/rocketmq-cluster-12.3.3.tgz
+    version: 12.3.3
+  - apiVersion: v2
     appVersion: 5.3.0
     created: "2024-09-16T08:00:40.283592217Z"
     description: RocketMQ Helm chart
@@ -733,4 +767,4 @@ entries:
     urls:
     - https://github.com/itboon/rocketmq-helm/releases/download/rocketmq-cluster-chart-11.0.0/rocketmq-cluster-11.0.0.tgz
     version: 11.0.0
-generated: "2024-09-16T08:00:40.284020321Z"
+generated: "2025-03-24T15:14:04.357013482Z"
